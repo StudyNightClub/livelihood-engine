@@ -36,7 +36,7 @@ class ChatbotClient(object):
                 'road_work': road_map
             }
         }
-        logging.info('Push {}'.format(data))
+        logging.info('POST chatbot/push {}'.format(data))
         requests.post(self.url, data=data)
 
     def _convert_event_type(self, t):
