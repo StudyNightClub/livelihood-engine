@@ -10,7 +10,7 @@ app = Flask(__name__)
 locations = ServiceLocation()
 if not locations.is_all_set():
     logging.error(locations.__dict__)
-    #raise EnvironmentError('Environment variables are incomplete.')
+    raise EnvironmentError('Environment variables are incomplete.')
 
 @app.route('/')
 def greet():
