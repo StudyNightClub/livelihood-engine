@@ -44,8 +44,7 @@ def notify_here(user_id):
         logging.warn('Incomplete post data when /notify_here. {}'.format(body))
         return json.jsonify({'error': 'Please specify longitude and latitude.'}), HTTPStatus.BAD_REQUEST
 
-    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    events = livelihood.get_events({ 'after': tomorrow, 'before': tomorrow })
+    events = get_events_of_tomorrow()
     events = event_filter.nearby_events(events, lat, lon)
     chatbot.push_notification(user_id, NotificationCategory.USER_REQUESTED,
         events, important_images.get_image(), important_images.get_image(),
@@ -58,4 +57,12 @@ def notify_interest(user_id):
 
 @app.route('/notify_all/<string:user_id>', methods=['POST'])
 def notify_all(user_id):
-    return user_id
+    events = get_events_of_tomorrow()
+    chatbot.push_notification(user_id, NotificationCategory.BROADCAST,
+        events, important_images.get_image(), important_images.get_image(),
+        important_images.get_image())
+    return json.jsonify({})
+
+def get_events_of_tomorrow():
+    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow })
