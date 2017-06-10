@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import logging
 from flask import Flask, request, json
 from service_location import ServiceLocation

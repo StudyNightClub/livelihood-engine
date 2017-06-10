@@ -4,6 +4,7 @@ The notification generating engine.
 ## Requirements
 
 * Flask 0.12
+* Requests 2.17
 
 ## Run
 

@@ -2,7 +2,7 @@
 
 import os
 
-class ServiceLocation:
+class ServiceLocation(object):
 
     def __init__(self):
         self.chatbot_url = os.environ.get('CHATBOT_URL')
