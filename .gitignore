@@ -103,4 +103,4 @@ ENV/
 *.swp
 *.swo
 *.swn
-setup.sh
+setup_env.sh
