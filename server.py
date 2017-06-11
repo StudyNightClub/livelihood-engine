@@ -44,11 +44,8 @@ def get_map(user_id):
     location = get_user_location(user)
 
     events = get_events_of_tomorrow()
-    lat = location['latitude']
-    lon = location['longitude']
-    events = event_filter.nearby_events(events, lat, lon)
-    event_map = plotter.drawMarkerById(events, location)
-
+    ids = [e['id'] for e in events]
+    event_map = plotter.drawMarkerById(ids, location)
     return event_map
 
 
