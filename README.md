@@ -1,4 +1,4 @@
-# livelihood-engine v0.1.0
+# livelihood-engine v1.0.0
 The notification generating engine.
 
 ## Requirements
@@ -36,7 +36,6 @@ The engine server takes the following requests:
 
 A greeting message and version of the current engine will be returned.
 
-
 ### Get map URL on user's location of interest
 
     $ curl -X GET <engine_url>/get_map/<user_id>
@@ -56,6 +55,7 @@ Field       | Value
 
 When requested, the engine will find events near the given location, and send
 notifications to chatbot. The notification category will be `userRequested`.
+Only the events of subscribed types will be used.
 
 For example:
 
@@ -73,6 +73,7 @@ The default value is 0.
 When requested, the engine will get the user's location of interest and other
 setting to generated related notifications. The notifications will be sent to
 chatbot.
+Only the events of subscribed types will be used.
 
 ### Trigger notification of all events
 
