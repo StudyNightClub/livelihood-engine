@@ -43,7 +43,7 @@ def get_map(user_id):
     user = users.get_user_config(user_id)
     location = get_user_location(user)
 
-    events = get_events_of_tomorrow()
+    events = get_events_of_tomorrow(['all'])
     ids = [e['id'] for e in events]
     event_map = plotter.drawMarkerById(ids, location)
     return event_map
@@ -59,7 +59,7 @@ def notify_here(user_id):
         logging.warn('Incomplete post data when /notify_here. {}'.format(request.form))
         return json.jsonify({'error': 'Please specify longitude and latitude.'}), HTTPStatus.BAD_REQUEST
 
-    events = get_events_of_tomorrow()
+    events = get_events_of_tomorrow(['all'])
     events = event_filter.nearby_events(events, lat, lon)
     logging.info('notify_here events {}'.format(events))
 
@@ -73,10 +73,11 @@ def notify_here(user_id):
 def notify_interest(user_id):
     user = users.get_user_config(user_id)
     location = get_user_location(user)
+    types = get_user_subscribed_types(user)
 
-    events = get_events_of_tomorrow()
-    lat = location['latitude']
-    lon = location['longitude']
+    events = get_events_of_tomorrow(types)
+    lat = float(location['latitude'])
+    lon = float(location['longitude'])
     events = event_filter.nearby_events(events, lat, lon)
 
     user_scheduled = request.args.get('user_scheduled', 0, int)
@@ -95,16 +96,16 @@ def notify_interest(user_id):
 
 @app.route('/notify_all/<string:user_id>', methods=['POST'])
 def notify_all(user_id):
-    events = get_events_of_tomorrow()
+    events = get_events_of_tomorrow(['all'])
     water_map, power_map, road_map = get_maps(events, get_user_location(None))
     chatbot.push_notification(user_id, NotificationCategory.BROADCAST,
         events, water_map, power_map, road_map)
     return json.jsonify({})
 
 
-def get_events_of_tomorrow():
+def get_events_of_tomorrow(types):
     tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-    return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow })
+    return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow, 'type': ','.join(types) })
 
 
 def get_event_ids(events, event_type):
@@ -112,10 +113,21 @@ def get_event_ids(events, event_type):
 
 
 def get_user_location(user):
-    return {
-        'latitude': 25.033913,
-        'longitude': 121.564467,
-    }
+    if user:
+        return user
+    else:
+        return { 'latitude': 25.033913, 'longitude': 121.564467 }
+
+
+def get_user_subscribed_types(user):
+    types = []
+    if user['subscribe_electricity']:
+        types.append('power')
+    if user['subscribe_water']:
+        types.append('water')
+    if user['subscribe_road']:
+        types.append('road')
+    return types
 
 
 def get_maps(events, location):
