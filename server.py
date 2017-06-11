@@ -41,7 +41,7 @@ def notify_here(user_id):
         lon = body['longitude']
         lat = body['latitude']
     except (KeyError, TypeError):
-        logging.warn('Incomplete post data when /notify_here. {}'.format(body))
+        logging.warn('Incomplete post data when /notify_here. {}'.format(request.form))
         return json.jsonify({'error': 'Please specify longitude and latitude.'}), HTTPStatus.BAD_REQUEST
 
     events = get_events_of_tomorrow()

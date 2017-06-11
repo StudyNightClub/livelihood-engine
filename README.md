@@ -45,7 +45,7 @@ A map URL centered on the user's location of interest will be returned.
 
 ### Trigger notification on a specific location
 
-    $ curl -X POST -d data=<body> <engine_url>/notify_here/<user_id>
+    $ curl -X POST -d <body> <engine_url>/notify_here/<user_id>
 
 The body is a JSON object with the following fields:
 
@@ -57,9 +57,13 @@ Field       | Value
 When requested, the engine will find events near the given location, and send
 notifications to chatbot. The notification category will be `userRequested`.
 
+For example:
+
+    $ curl -X POST -d '{"longitude":121.5556, "latitude":25.0026}' http://localhost:5000/notify_here/foo
+
 ### Trigger notification on user's location of interest
 
-    $ curl -X POST -d data={} <engine_url>/notify_interest/<user_id>
+    $ curl -X POST <engine_url>/notify_interest/<user_id>
 
 This method takes one optional parameter `user_scheduled`, the value could be
 0 or 1. The value of this parameter affects the generated notification
@@ -72,7 +76,7 @@ chatbot.
 
 ### Trigger notification of all events
 
-    $ curl -X POST -d data={} <engine_url>/notify_all/<user_id>
+    $ curl -X POST <engine_url>/notify_all/<user_id>
 
 When requested, the engine will get all events to happen, and send
 notifications to chatbot. The notification category will be `broadcast`.
