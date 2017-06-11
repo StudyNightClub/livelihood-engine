@@ -37,7 +37,7 @@ class ChatbotClient(object):
             }
         }
         logging.info('POST chatbot/push {}'.format(data))
-        requests.post(self.url, data=data)
+        requests.post(self.url, json=data)
 
     def _convert_event_type(self, t):
         t = t.lower()
