@@ -63,5 +63,5 @@ class ChatbotClient(object):
 class NotificationCategory(Enum):
     USER_REQUESTED = 'userRequested'
     USER_SCHEDULED = 'userScheduled'
-    SYSTEM_SCHYDULED = 'systemScheduled'
+    SYSTEM_SCHEDULED = 'systemScheduled'
     BROADCAST = 'broadcast'

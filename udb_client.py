@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import logging
 from urllib.parse import urljoin
 import requests
 
@@ -22,6 +23,10 @@ class UserDbClient(object):
     def _get_json(self, url):
         response = requests.get(url)
         if response.status_code == 200:
-            return response.json()
+            try:
+                return response.json()
+            except:
+                logging.warn('Mal-formed user config {}'.format(url))
+                return None
         else:
             return None

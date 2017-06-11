@@ -40,7 +40,16 @@ def greet():
 
 @app.route('/get_map/<string:user_id>')
 def get_map(user_id):
-    return important_images.get_image()
+    user = users.get_user_config(user_id)
+    location = get_user_location(user)
+
+    events = get_events_of_tomorrow()
+    lat = location['latitude']
+    lon = location['longitude']
+    events = event_filter.nearby_events(events, lat, lon)
+    event_map = plotter.drawMarkerById(events, location)
+
+    return event_map
 
 
 @app.route('/notify_here/<string:user_id>', methods=['POST'])
@@ -57,7 +66,7 @@ def notify_here(user_id):
     events = event_filter.nearby_events(events, lat, lon)
     logging.info('notify_here events {}'.format(events))
 
-    water_map, power_map, road_map = get_maps(events)
+    water_map, power_map, road_map = get_maps(events, body)
     chatbot.push_notification(user_id, NotificationCategory.USER_REQUESTED,
         events, water_map, power_map, road_map)
     return json.jsonify({})
@@ -65,13 +74,32 @@ def notify_here(user_id):
 
 @app.route('/notify_interest/<string:user_id>', methods=['POST'])
 def notify_interest(user_id):
-    return user_id
+    user = users.get_user_config(user_id)
+    location = get_user_location(user)
+
+    events = get_events_of_tomorrow()
+    lat = location['latitude']
+    lon = location['longitude']
+    events = event_filter.nearby_events(events, lat, lon)
+
+    user_scheduled = request.args.get('user_scheduled', 0, int)
+    if user_scheduled == 0:
+        category = NotificationCategory.SYSTEM_SCHEDULED
+    else:
+        category = NotificationCategory.USER_SCHEDULED
+
+    water_map, power_map, road_map = get_maps(events, location)
+    chatbot.push_notification(user_id, category, events, water_map, power_map,
+            road_map)
+
+    return json.jsonify({})
+
 
 
 @app.route('/notify_all/<string:user_id>', methods=['POST'])
 def notify_all(user_id):
     events = get_events_of_tomorrow()
-    water_map, power_map, road_map = get_maps(events)
+    water_map, power_map, road_map = get_maps(events, get_user_location(None))
     chatbot.push_notification(user_id, NotificationCategory.BROADCAST,
         events, water_map, power_map, road_map)
     return json.jsonify({})
@@ -86,8 +114,15 @@ def get_event_ids(events, event_type):
     return [e['id'] for e in events if e['type'] == event_type]
 
 
-def get_maps(events):
-    water_map = plotter.drawMarkerById(get_event_ids(events, 'water'), body)
-    power_map = plotter.drawMarkerById(get_event_ids(events, 'power'), body)
-    road_map = plotter.drawMarkerById(get_event_ids(events, 'road'), body)
+def get_user_location(user):
+    return {
+        'latitude': 25.033913,
+        'longitude': 121.564467,
+    }
+
+
+def get_maps(events, location):
+    water_map = plotter.drawMarkerById(get_event_ids(events, 'water'), location)
+    power_map = plotter.drawMarkerById(get_event_ids(events, 'power'), location)
+    road_map = plotter.drawMarkerById(get_event_ids(events, 'road'), location)
     return water_map, power_map, road_map
