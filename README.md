@@ -1,4 +1,4 @@
-# livelihood-engine v1.0.1
+# livelihood-engine v1.1.0
 The notification generating engine.
 
 ## Requirements
