@@ -14,7 +14,7 @@ from service_location import ServiceLocation
 from udb_client import UserDbClient
 
 
-VERSION = 'v1.0.0'
+VERSION = 'v1.0.1'
 app = Flask(__name__)
 
 
@@ -113,10 +113,10 @@ def get_event_ids(events, event_type):
 
 
 def get_user_location(user):
-    if user:
+    if user and user.get('longitude'):
         return user
     else:
-        return { 'latitude': 25.033913, 'longitude': 121.564467 }
+        return { 'latitude': 25.047760, 'longitude': 121.517029 }
 
 
 def get_user_subscribed_types(user):
