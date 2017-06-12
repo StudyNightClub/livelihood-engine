@@ -104,3 +104,4 @@ ENV/
 *.swo
 *.swn
 setup_env.sh
+test.sh

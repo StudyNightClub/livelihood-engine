@@ -8,6 +8,7 @@ from mapplotter import MapPlotter
 
 from chatbot_client import ChatbotClient, NotificationCategory
 import event_filter
+from google_url_shortener import shorten
 from ldb_client import LivelihoodDbClient
 from service_location import ServiceLocation
 from udb_client import UserDbClient
@@ -45,7 +46,7 @@ def get_map(user_id):
     events = get_events_of_tomorrow(['all'])
     ids = [e['id'] for e in events]
     event_map = plotter.drawMarkerById(ids, location)
-    return event_map
+    return shorten(event_map)
 
 
 @app.route('/notify_here/<string:user_id>', methods=['POST'])
@@ -133,4 +134,4 @@ def get_maps(events, location):
     water_map = plotter.drawMarkerById(get_event_ids(events, 'water'), location)
     power_map = plotter.drawMarkerById(get_event_ids(events, 'power'), location)
     road_map = plotter.drawMarkerById(get_event_ids(events, 'road'), location)
-    return water_map, power_map, road_map
+    return shorten(water_map), shorten(power_map), shorten(road_map)
