@@ -8,7 +8,6 @@ from mapplotter import MapPlotter
 
 from chatbot_client import ChatbotClient, NotificationCategory
 import event_filter
-import important_images
 from ldb_client import LivelihoodDbClient
 from service_location import ServiceLocation
 from udb_client import UserDbClient
