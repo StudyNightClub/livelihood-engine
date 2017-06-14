@@ -14,7 +14,7 @@ from service_location import ServiceLocation
 from udb_client import UserDbClient
 
 
-VERSION = 'v1.1.0'
+VERSION = 'v1.2.0'
 app = Flask(__name__)
 
 
