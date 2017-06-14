@@ -74,15 +74,15 @@ def notify_interest(user_id):
     user = users.get_user_config(user_id)
     location = get_user_location(user)
     types = get_user_subscribed_types(user)
-
     events = get_events_of_tomorrow(types)
-    lat = float(location['latitude'])
-    lon = float(location['longitude'])
-    events = event_filter.nearby_events(events, lat, lon)
 
     user_scheduled = request.args.get('user_scheduled', 0, int)
     if user_scheduled == 0:
         category = NotificationCategory.SYSTEM_SCHEDULED
+        # Filter events only on system schedule
+        lat = float(location['latitude'])
+        lon = float(location['longitude'])
+        events = event_filter.nearby_events(events, lat, lon)
     else:
         category = NotificationCategory.USER_SCHEDULED
 
