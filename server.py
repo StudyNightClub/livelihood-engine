@@ -60,10 +60,12 @@ def notify_here(user_id):
         return json.jsonify({'error': 'Please specify longitude and latitude.'}), HTTPStatus.BAD_REQUEST
 
     events = get_events_of_tomorrow(['all'])
+    # generate maps before filtering events.
+    water_map, power_map, road_map = get_maps(events, body)
+
     events = event_filter.nearby_events(events, lat, lon)
     logging.info('notify_here events {}'.format(events))
 
-    water_map, power_map, road_map = get_maps(events, body)
     chatbot.push_notification(user_id, NotificationCategory.USER_REQUESTED,
         events, water_map, power_map, road_map)
     return json.jsonify({})
@@ -75,18 +77,19 @@ def notify_interest(user_id):
     location = get_user_location(user)
     types = get_user_subscribed_types(user)
     events = get_events_of_tomorrow(types)
+    # generate maps before filtering events.
+    water_map, power_map, road_map = get_maps(events, location)
 
     user_scheduled = request.args.get('user_scheduled', 0, int)
     if user_scheduled == 0:
         category = NotificationCategory.SYSTEM_SCHEDULED
-        # Filter events only on system schedule
-        lat = float(location['latitude'])
-        lon = float(location['longitude'])
-        events = event_filter.nearby_events(events, lat, lon)
     else:
         category = NotificationCategory.USER_SCHEDULED
 
-    water_map, power_map, road_map = get_maps(events, location)
+    lat = float(location['latitude'])
+    lon = float(location['longitude'])
+    events = event_filter.nearby_events(events, lat, lon)
+
     chatbot.push_notification(user_id, category, events, water_map, power_map,
             road_map)
 
