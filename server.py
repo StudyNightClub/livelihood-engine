@@ -27,7 +27,7 @@ if not locations.is_all_set():
 livelihood = LivelihoodDbClient(locations.ldb_url)
 chatbot = ChatbotClient(locations.chatbot_url)
 users = UserDbClient(locations.udb_url, locations.udb_token)
-plotter = MapPlotter(locations.ldb_url, locations.map_url)
+plotter = MapPlotter(locations.map_url)
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -45,7 +45,7 @@ def get_map(user_id):
 
     events = get_events_of_tomorrow(['all'])
     ids = [e['id'] for e in events]
-    event_map = plotter.drawMarkerById(ids, location)
+    event_map = plotter.generateMapUrl(ids, location)
     return shorten(event_map)
 
 
@@ -134,7 +134,7 @@ def get_user_subscribed_types(user):
 
 
 def get_maps(events, location):
-    water_map = plotter.drawMarkerById(get_event_ids(events, 'water'), location)
-    power_map = plotter.drawMarkerById(get_event_ids(events, 'power'), location)
-    road_map = plotter.drawMarkerById(get_event_ids(events, 'road'), location)
+    water_map = plotter.generateMapUrl(get_event_ids(events, 'water'), location)
+    power_map = plotter.generateMapUrl(get_event_ids(events, 'power'), location)
+    road_map = plotter.generateMapUrl(get_event_ids(events, 'road'), location)
     return shorten(water_map), shorten(power_map), shorten(road_map)
