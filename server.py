@@ -95,8 +95,7 @@ def notify_all(user_id):
 
 
 def get_events_of_tomorrow(types):
-    tz = timezone(timedelta(hours=8))
-    tomorrow = (datetime.now(tz) + timedelta(days=1)).strftime('%Y-%m-%d')
+    tomorrow = get_tomorrow_date_str()
     return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow, 'type': ','.join(types) })
 
 
@@ -119,7 +118,7 @@ def get_user_subscribed_types(user):
 
 
 def get_map_url(location, event_type):
-    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    tomorrow = get_tomorrow_date_str()
     query = {
         'current_location': '{},{}'.format(location['latitude'], location['longitude']),
         'before': tomorrow,
@@ -132,3 +131,8 @@ def get_map_url(location, event_type):
 
 def get_all_types_of_maps(location):
     return get_map_url(location, 'water'), get_map_url(location, 'power'), get_map_url(location, 'road')
+
+
+def get_tomorrow_date_str():
+    tz = timezone(timedelta(hours=8))
+    return (datetime.now(tz) + timedelta(days=1)).strftime('%Y-%m-%d')
