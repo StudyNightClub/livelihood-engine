@@ -3,32 +3,29 @@
 from datetime import datetime, timedelta
 import logging
 from http import HTTPStatus
+from urllib.parse import urljoin
 from flask import Flask, request, json
-from mapplotter import MapPlotter
 
 from chatbot_client import ChatbotClient, NotificationCategory
 import event_filter
-from google_url_shortener import shorten
 from ldb_client import LivelihoodDbClient
 from service_location import ServiceLocation
 from udb_client import UserDbClient
 
 
-VERSION = 'v1.2.0'
+VERSION = 'v1.3.0'
 app = Flask(__name__)
 
 
-locations = ServiceLocation()
-if not locations.is_all_set():
-    logging.error(locations.__dict__)
+service_urls = ServiceLocation()
+if not service_urls.is_all_set():
+    logging.error(service_urls.__dict__)
     raise EnvironmentError('Environment variables are incomplete.')
 
 
-livelihood = LivelihoodDbClient(locations.ldb_url)
-chatbot = ChatbotClient(locations.chatbot_url)
-users = UserDbClient(locations.udb_url, locations.udb_token)
-plotter = MapPlotter(locations.map_url)
-
+livelihood = LivelihoodDbClient(service_urls.ldb_url)
+chatbot = ChatbotClient(service_urls.chatbot_url)
+users = UserDbClient(service_urls.udb_url, service_urls.udb_token)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -42,11 +39,7 @@ def greet():
 def get_map(user_id):
     user = users.get_user_config(user_id)
     location = get_user_location(user)
-
-    events = get_events_of_tomorrow(['all'])
-    ids = [e['id'] for e in events]
-    event_map = plotter.generateMapUrl(ids, location)
-    return shorten(event_map)
+    return get_map_url(location, 'all')
 
 
 @app.route('/notify_here/<string:user_id>', methods=['POST'])
@@ -60,12 +53,10 @@ def notify_here(user_id):
         return json.jsonify({'error': 'Please specify longitude and latitude.'}), HTTPStatus.BAD_REQUEST
 
     events = get_events_of_tomorrow(['all'])
-    # generate maps before filtering events.
-    water_map, power_map, road_map = get_maps(events, body)
-
     events = event_filter.nearby_events(events, lat, lon)
     logging.info('notify_here events {}'.format(events))
 
+    water_map, power_map, road_map = get_all_types_of_maps(body)
     chatbot.push_notification(user_id, NotificationCategory.USER_REQUESTED,
         events, water_map, power_map, road_map)
     return json.jsonify({})
@@ -77,8 +68,6 @@ def notify_interest(user_id):
     location = get_user_location(user)
     types = get_user_subscribed_types(user)
     events = get_events_of_tomorrow(types)
-    # generate maps before filtering events.
-    water_map, power_map, road_map = get_maps(events, location)
 
     user_scheduled = request.args.get('user_scheduled', 0, int)
     if user_scheduled == 0:
@@ -86,10 +75,7 @@ def notify_interest(user_id):
     else:
         category = NotificationCategory.USER_SCHEDULED
 
-    lat = float(location['latitude'])
-    lon = float(location['longitude'])
-    events = event_filter.nearby_events(events, lat, lon)
-
+    water_map, power_map, road_map = get_all_types_of_maps(location)
     chatbot.push_notification(user_id, category, events, water_map, power_map,
             road_map)
 
@@ -100,7 +86,7 @@ def notify_interest(user_id):
 @app.route('/notify_all/<string:user_id>', methods=['POST'])
 def notify_all(user_id):
     events = get_events_of_tomorrow(['all'])
-    water_map, power_map, road_map = get_maps(events, get_user_location(None))
+    water_map, power_map, road_map = get_all_types_of_maps(get_user_location(None))
     chatbot.push_notification(user_id, NotificationCategory.BROADCAST,
         events, water_map, power_map, road_map)
     return json.jsonify({})
@@ -109,10 +95,6 @@ def notify_all(user_id):
 def get_events_of_tomorrow(types):
     tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
     return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow, 'type': ','.join(types) })
-
-
-def get_event_ids(events, event_type):
-    return [e['id'] for e in events if e['type'] == event_type]
 
 
 def get_user_location(user):
@@ -133,8 +115,17 @@ def get_user_subscribed_types(user):
     return types
 
 
-def get_maps(events, location):
-    water_map = plotter.generateMapUrl(get_event_ids(events, 'water'), location)
-    power_map = plotter.generateMapUrl(get_event_ids(events, 'power'), location)
-    road_map = plotter.generateMapUrl(get_event_ids(events, 'road'), location)
-    return shorten(water_map), shorten(power_map), shorten(road_map)
+def get_map_url(location, event_type):
+    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    query = {
+        'current_location': '{},{}'.format(location['latitude'], location['longitude']),
+        'before': tomorrow,
+        'after': tomorrow,
+        'type': event_type,
+    }
+    query_str = '&'.join([key + '=' + value for key, value in query.items()])
+    return urljoin(service_urls.map_url, 'map.html?' + query_str)
+
+
+def get_all_types_of_maps(location):
+    return get_map_url(location, 'water'), get_map_url(location, 'power'), get_map_url(location, 'road')
