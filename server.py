@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from http import HTTPStatus
 from urllib.parse import urljoin
@@ -95,7 +95,8 @@ def notify_all(user_id):
 
 
 def get_events_of_tomorrow(types):
-    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%Y-%m-%d')
+    tz = timezone(timedelta(hours=8))
+    tomorrow = (datetime.now(tz) + timedelta(days=1)).strftime('%Y-%m-%d')
     return livelihood.get_events({ 'after': tomorrow, 'before': tomorrow, 'type': ','.join(types) })
 
 
