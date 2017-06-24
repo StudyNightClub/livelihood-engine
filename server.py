@@ -85,10 +85,12 @@ def notify_interest(user_id):
 
 @app.route('/notify_all/<string:user_id>', methods=['POST'])
 def notify_all(user_id):
-    events = get_events_of_tomorrow(['all'])
+    water_events = get_events_of_tomorrow(['water'])
+    power_events = get_events_of_tomorrow(['power'])
+    road_events = get_events_of_tomorrow(['road'])
     water_map, power_map, road_map = get_all_types_of_maps(get_user_location(None))
     chatbot.push_notification(user_id, NotificationCategory.BROADCAST,
-        events, water_map, power_map, road_map)
+        water_events + power_events + road_events, water_map, power_map, road_map)
     return json.jsonify({})
 
 
