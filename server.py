@@ -68,6 +68,7 @@ def notify_interest(user_id):
     location = get_user_location(user)
     types = get_user_subscribed_types(user)
     events = get_events_of_tomorrow(types)
+    events = event_filter.nearby_events(events, location['latitude'], location['longitude'])
 
     user_scheduled = request.args.get('user_scheduled', 0, int)
     if user_scheduled == 0:
