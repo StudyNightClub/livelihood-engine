@@ -21,7 +21,7 @@ class ChatbotClient(object):
                 'startTime': self._convert_time(e['start_time']),
                 'endTime': self._convert_time(e['end_time']),
                 'description': e['description'],
-                'addrRoad': e['city'] + e['district'] + e['road'],
+                'addrRoad': e['city'] + e['district'] + e['detail_addr'],
                 'addrDetail': e['detail_addr']
             }
             notifications.append(noti)
